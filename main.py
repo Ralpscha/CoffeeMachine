@@ -1,37 +1,23 @@
 from menu import MENU, resources
 
 
-
 # TODO: create report
 def create_report():
     global total_revenue
-    global water
-    global milk
-    global coffee
+    global water_available
+    global milk_available
+    global coffee_available
 
     print("dit is het rapport")
-    print(f"We've got ${total_revenue} in the register")
+    print(f"We've got ${total_revenue:.2f} in the register")
     print(f"""
     Current resources are: 
-    Water:  {water} ml
-    Milk:   {milk}  ml
-    Coffee: {coffee}g
+    Water:  {water_available} ml
+    Milk:   {milk_available}  ml
+    Coffee: {coffee_available}g
 """)
 
 # TODO: give the price
-
-
-def give_price(product):
-    match product:
-        case 'espresso':
-            price = 1.5
-        case 'latte':
-            price = 2.0
-        case 'cappuccino':
-            price = 2.50
-        case _:
-            price = 0
-    return price
 
 
 def give_menu_price(product):
@@ -54,33 +40,41 @@ def receive_money(price):
 
     received_amount = 0.25 * quarters + 0.10 * dimes + 0.05 * nickles + 0.01 * pennies
     if received_amount < price:
-        print(f"Sorry ${received_amount} is not enough money. Money refunded.")
+        print(f"Sorry ${received_amount:.2f} is not enough money. Money refunded.")
         return False
     elif received_amount > price:
-        print(f"Here is ${round((received_amount - price), 2)} in change")
+        print(f"Here is ${(received_amount - price):.2f} in change")
         total_revenue += price
         return True
     elif received_amount == price:
-        print(f"Received ${received_amount} and that is the {price}.")
+        print(f"Received ${received_amount:.2f} and that is the ${price:.2f}.")
         total_revenue += price
         return True
 
 
 def make_order(product):
     global water_available
+    global milk_available
+    global coffee_available
+    global total_revenue
     print(f"Our kitchen tries to make {product}, uno momento !")
-    print(f"Ingredients needed: {MENU[product]['ingredients']} ")
+
     water_needed = MENU[product]['ingredients']['water']
-    print(f"Water needed: {water_needed}, available = {water_available}")
-    if water_needed > water_available:
-        price = MENU[product]['costs']
-        print(f"Water supply too low. Can't make order, refund money: {price}")
+    milk_needed = MENU[product]['ingredients']['milk']
+    coffee_needed = MENU[product]['ingredients']['coffee']
+    print(f"Ingredients needed: {water_needed}ml water, {milk_needed}ml milk, {coffee_needed}gr coffee. ")
+    print(f"Ingredients available: {water_available}ml water, {milk_available}ml milk, {coffee_available}gr coffee. ")
+
+    if water_needed > water_available or milk_needed > milk_available or coffee_needed > coffee_available:
+        price = MENU[product]['cost']
+        print(f"Ingredients supply too low. Can't make order, refund money: {price:.2f}")
+        total_revenue -= price
     else:
-        print(f"enough water for {product}, enjoy!")
+        print(f"enough ingredients for {product}, enjoy!\n")
         water_available -= water_needed
-        print(f"remaining water = {water_available}.")
-
-
+        milk_available -= milk_needed
+        coffee_available -= coffee_needed
+        print(f"remaining ingredients = {water_available}ml water, {milk_available}ml milk, {coffee_available}gr coffee.\n")
 
 
 total_revenue = 0
@@ -93,18 +87,18 @@ coffee_available = resources['coffee']
 
 while machine_on:
     wens = input("What would you like? (espresso/latte/cappuccino): ")
-    price = give_menu_price(wens)
+
+
     match wens:
         case 'off':
             machine_on = False
             print("Turning off the machine.")
         case 'report':
             create_report()
-        case 'espresso':
-            # price = give_price(wens)
-            # print(f"The price is {price}")
-
-            print(f"The menu price is {price:.2f}")
+        case _:
+            # price = give_menu_price(wens)
+            price = MENU[wens]['cost']
+            print(f"The menu price is ${price:.2f}")
             if receive_money(price):
                 print("money ok, let's brew some coffee")
                 # cust_func_name = "make_" + wens
